@@ -1,0 +1,882 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="블루 머쉬맘 제보 게시판 - 실시간 목격 정보 공유">
+    <title>블루 머쉬맘 게시판</title>
+    <style>
+        body {
+            background: #1e1e1e;
+            color: white;
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+        .header {
+            background: #333;
+            padding: 20px;
+            display: flex;
+            padding-left: 80px;
+            justify-content: space-between;
+            align-items: center;
+            position: relative;
+            z-index: 1000;
+        }
+        .auth-section {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+        .auth-section button {
+            background: #4da6ff;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .container {
+            margin: auto;
+            padding: 20px;
+            width: 80%;
+            max-width: 1000px;
+        }
+        .tab-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            justify-content: center;
+        }
+        .tab-button {
+            background: #444;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px 5px 0 0;
+            cursor: pointer;
+        }
+        .tab-button.active {
+            background: #4da6ff;
+        }
+        .board {
+            background: #282828;
+            padding: 10px;
+            border-radius: 8px;
+            box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.4);
+        }
+        .post-list {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .post-list th, .post-list td {
+            padding: 10px;
+            border-bottom: 1px solid #444;
+            text-align: left;
+        }
+        .post-list tr:hover {
+            background: #333;
+            cursor: pointer;
+        }
+        /* 제목 열을 넓히고, 너무 길 경우 "..." 처리 */
+        .post-list th:nth-child(2), 
+        .post-list td:nth-child(2) {
+            width: 40%; /* 제목을 전체 테이블의 40% 차지 */
+            max-width: 400px; /* 제목이 너무 길어지지 않도록 제한 */
+            white-space: nowrap; /* 한 줄로 유지 */
+            overflow: hidden;
+            text-overflow: ellipsis; /* 길면 ...으로 표시 */
+        }
+        .action-btn {
+            background: #4da6ff;
+            color: white;
+            border: none;
+            padding: 10px;
+            margin-bottom: 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            float: right;
+        }
+        .action-btn-container {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 10px;
+        }
+        .search-section {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            margin-top: 15px;
+            justify-content: center;
+            align-items: center;
+        }
+        .search-input {
+            padding: 8px;
+            background: #444;
+            border: 1px solid #555;
+            color: white;
+            border-radius: 3px;
+            width: 200px;
+        }
+        .search-button {
+            background: #4da6ff;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .pagination {
+            display: flex;
+            justify-content: center;
+            margin-top: 10px;
+            margin-bottom: 10px;
+            gap: 5px;
+        }
+        .pagination button {
+            background: #444;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .pagination button.active {
+            background: #4da6ff;
+        }
+
+        /* 채널 탭 스타일 */
+        .channels-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1px; /* 카드 사이 간격 */
+        }
+        .channel-card {
+            width: 40px; /* 더 작게 */
+            height: 20px; /* 높이도 줄이기 */
+            padding: 1px; /* 내부 여백 최소화 */
+            font-size: 6px; /* 글자 크기 축소 */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            border-radius: 3px; /* 둥근 모서리 줄이기 */
+        }
+        .channel-box {
+            background: #333;
+            border-radius: 3px;
+            padding: 8px;
+            position: relative;
+        }
+        
+        .channel-box.green {
+            border-left: 4px solid #4caf50;
+        }
+        .channel-box.red {
+            border-left: 4px solid #f44336;
+        }
+        .channel-name {
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 0.9em;
+        }
+        .channel-info {
+            font-size: 0.7em;
+            color: #aaa;
+            margin-bottom: 2px;
+        }
+        .channel-actions {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+        }
+
+        /* 메뉴 토글 버튼 */
+        .menu-toggle {
+            position: absolute;
+            top: 50%;
+            left: 20px;
+            transform: translateY(-50%);
+            background: #444;
+            color: white;
+            padding: 10px;
+            border: none;
+            cursor: pointer;
+            z-index: 1101;
+        }
+        .menu-toggle.active {
+            display: none;
+        }
+
+        /* 사이드바 메뉴 */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: -250px;
+            width: 250px;
+            height: 100%;
+            background: #333;
+            padding-top: 20px;
+            transition: left 0.3s;
+            box-shadow: 5px 0 10px rgba(0, 0, 0, 0.3);
+            z-index: 1001;
+        }
+        .sidebar.active {
+            left: 0;
+        }
+        .sidebar a {
+            display: block;
+            color: white;
+            padding: 10px;
+            text-decoration: none;
+        }
+
+        /* 사이드바 내 닫기 버튼 */
+        .close-btn {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: white;
+            cursor: pointer;
+        }
+
+        /* 오버레이 (메뉴 활성 시 배경 흐리게 처리) */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            z-index: 998;
+        }
+        .sidebar.active ~ .overlay {
+            display: block;
+        }
+
+        /* 모달 스타일 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 2000;
+        }
+        .modal-content {
+            background-color: #333;
+            margin: 10% auto;
+            padding: 20px;
+            width: 70%;
+            max-width: 700px;
+            border-radius: 8px;
+            position: relative;
+        }
+        .close-modal {
+            position: absolute;
+            top: 10px;
+            right: 15px;
+            font-size: 24px;
+            cursor: pointer;
+        }
+        .modal-title {
+            margin-top: 0;
+            border-bottom: 1px solid #555;
+            padding-bottom: 15px;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 8px;
+            background: #444;
+            border: 1px solid #555;
+            color: white;
+            border-radius: 3px;
+        }
+        .form-group textarea {
+            min-height: 150px;
+            resize: vertical;
+        }
+        .warning-text {
+            color: #ffcc00;
+            margin-top: 15px;
+            font-size: 0.9em;
+            font-style: italic;
+        }
+        .submit-btn {
+            background: #4da6ff;
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            float: right;
+        }
+        .edit-btn, .like-btn {
+            background: #4da6ff;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+            margin-right: 5px;
+        }
+        .delete-btn, .dislike-btn {
+            background: #ff4d4d;
+            color: white;
+            border: none;
+            padding: 5px 10px;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .post-info {
+            background: #444;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            font-size: 0.9em;
+        }
+        .post-content {
+            background: #383838;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            min-height: 100px;
+        }
+
+        /* 댓글 섹션 스타일 수정 - 펨코 스타일로 */
+        .comments-section {
+            margin-top: 20px;
+            max-height: 400px;
+            border-top: 1px solid #555;
+            padding-top: 15px;
+            display: flex;
+            overflow-y: auto;
+            flex-direction: column;
+        }
+        #comments, #channelComments {
+            max-height: 400px;
+            overflow-y: auto;
+            padding-bottom: 20px;
+        }
+        #comments::-webkit-scrollbar, #channelComments::-webkit-scrollbar {
+        width: 8px;
+        }
+        #comments::-webkit-scrollbar-track, #channelComments::-webkit-scrollbar-track {
+        background: #333;
+        border-radius: 4px;
+        }
+        #comments::-webkit-scrollbar-thumb, #channelComments::-webkit-scrollbar-thumb {
+        background: #555;
+        border-radius: 4px;
+        }
+        #comments::-webkit-scrollbar-thumb:hover, #channelComments::-webkit-scrollbar-thumb:hover {
+        background: #666;
+        }
+        .comment {
+            background: #383838;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 13px;
+            animation: fadeIn 0.3s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .comment-author {
+            font-weight: bold;
+            margin-bottom: 5px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .comment-form {
+            background: #333;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 10px;
+            position: sticky;
+            bottom: 0;
+            z-index: 10;
+        }
+        .comment-form textarea {
+            width: 100%;
+            padding: 8px;
+            background: #444;
+            border: 1px solid #555;
+            color: white;
+            border-radius: 3px;
+            min-height: 60px;
+            resize: vertical;
+            margin-bottom: 10px;
+        }
+
+        /* 스크롤바 스타일링 */
+        .comments-section::-webkit-scrollbar {
+            width: 8px;
+        }
+        .comments-section::-webkit-scrollbar-track {
+            background: #333;
+            border-radius: 4px;
+        }
+        .comments-section::-webkit-scrollbar-thumb {
+            background: #555;
+            border-radius: 4px;
+        }
+        .comments-section::-webkit-scrollbar-thumb:hover {
+            background: #666;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #555;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+            color: white;
+            margin-right: 10px;
+        }
+        .user-avatar-sm {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #555;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 14px;
+            color: white;
+        }
+        .vote-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .vote-counter {
+            background: #444;
+            padding: 5px 10px;
+            border-radius: 3px;
+            margin-left: 10px;
+        }
+
+        /* 프로필 모달 스타일 */
+        .profile-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: #4da6ff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 36px;
+            color: white;
+            margin-right: 20px;
+        }
+        .profile-info {
+            flex-grow: 1;
+        }
+        .profile-username {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+        .profile-email {
+            color: #aaa;
+            font-size: 14px;
+        }
+        .profile-stats {
+            margin-top: 15px;
+            display: flex;
+            gap: 20px;
+        }
+        .profile-stat {
+            text-align: center;
+        }
+        .profile-stat-value {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        .profile-stat-label {
+            font-size: 12px;
+            color: #aaa;
+        }
+        .profile-tabs {
+            display: flex;
+            border-bottom: 1px solid #555;
+            margin-bottom: 15px;
+        }
+        .profile-tab {
+            padding: 10px 15px;
+            cursor: pointer;
+        }
+        .profile-tab.active {
+            border-bottom: 2px solid #4da6ff;
+            color: #4da6ff;
+        }
+        .profile-content {
+            margin-top: 20px;
+        }
+        .profile-edit-section {
+            margin-top: 20px;
+        }
+        .avatar-colors {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        .avatar-color {
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            cursor: pointer;
+        }
+        .avatar-color.selected {
+            border: 2px solid white;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <button class="menu-toggle" id="menuButton" onclick="toggleMenu()">☰ 메뉴</button>
+        <h1>블루 머쉬맘 게시판</h1>
+        <div class="auth-section">
+            <p id="loginStatus">로그인이 필요합니다.</p>
+            <div id="userAvatar" class="user-avatar" style="display: none;" onclick="openProfileModal()"></div>
+            <button id="registerBtn">회원가입</button>
+            <button id="loginBtn">로그인</button>
+            <button id="logoutBtn" style="display: none;">로그아웃</button>
+        </div>
+    </div>
+    <div class="sidebar" id="sidebar">
+        <button class="close-btn" onclick="toggleMenu()">✖</button>
+        <a href="#">공식 홈페이지</a>
+    </div>
+    <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+
+    <div class="container">
+        <div class="tab-buttons">
+          <button id="boardTabBtn" class="tab-button active">게시판</button>
+          <button id="channelTabBtn" class="tab-button">채널</button>
+        </div>
+        
+        <!-- 게시판 탭 -->
+        <div id="boardTab" class="board">
+          <div class="action-btn-container">
+            <button class="action-btn" id="writePostBtn" style="display: none;">글쓰기</button>
+          </div>
+          
+          <table class="post-list">
+            <thead>
+              <tr>
+                <th>번호</th>
+                <th>제목</th>
+                <th>작성자</th>
+                <th>작성 시간</th>
+                <th>조회</th>
+                <th>댓글</th>
+                <th>추천</th>
+              </tr>
+            </thead>
+            <tbody id="post-list-body"></tbody>
+          </table>
+
+          <!-- 검색창을 페이지네이션 아래로 이동 -->
+          <div class="search-section">
+            <input type="text" id="searchInput" class="search-input" placeholder="검색어 입력...">
+            <button id="searchBtn" class="search-button">검색</button>
+          </div>
+          
+          <!-- 페이지네이션 -->
+          <div class="pagination" id="pagination"></div>
+        </div>
+        
+        <!-- 채널 탭 -->
+        <div id="channelTab" class="board" style="display: none;">
+          <button class="action-btn" id="addChannelBtn">채널 추가</button>
+          <div class="channels-container" id="channelsContainer"></div>
+        </div>
+      </div>
+
+    <!-- 글쓰기 모달 -->
+    <div id="writeModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" id="closeWriteModal">&times;</span>
+            <h2 class="modal-title">새 글 작성</h2>
+            <div class="form-group">
+                <label for="postTitle">제목</label>
+                <input type="text" id="postTitle" placeholder="제목을 입력하세요">
+            </div>
+            <div class="form-group">
+                <label for="postContent">내용</label>
+                <textarea id="postContent" placeholder="내용을 입력하세요"></textarea>
+            </div>
+            <button id="submitPost" class="submit-btn">등록</button>
+        </div>
+    </div>
+
+    <!-- 글 보기 모달 -->
+    <div id="viewModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" id="closeViewModal">&times;</span>
+            <h2 class="modal-title" id="viewTitle"></h2>
+            <div class="post-info">
+                <div style="display: flex; align-items: center;">
+                    <div class="user-avatar-sm" id="postAuthorAvatar"></div>
+                    <span id="viewAuthor" style="margin-left: 10px;"></span>
+                </div>
+                <div style="margin-top: 5px;">
+                    <span id="viewDate"></span> | 조회: <span id="viewViews"></span>
+                    <div id="voteSection" style="float: right;">
+                        <button id="likeBtn" class="like-btn">👍 <span id="likeCount">0</span></button>
+                        <button id="dislikeBtn" class="dislike-btn">👎 <span id="dislikeCount">0</span></button>
+                    </div>
+                </div>
+                <div id="postActions" style="margin-top: 10px; display: none;">
+                    <button id="editBtn" class="edit-btn">수정</button>
+                    <button id="deleteBtn" class="delete-btn">삭제</button>
+                </div>
+            </div>
+            <div class="post-content" id="viewContent"></div>
+            
+            <!-- 수정 폼 (기본적으로 숨김) -->
+            <div id="editForm" style="display: none;">
+                <div class="form-group">
+                    <label for="editTitle">제목</label>
+                    <input type="text" id="editTitle">
+                </div>
+                <div class="form-group">
+                    <label for="editContent">내용</label>
+                    <textarea id="editContent"></textarea>
+                </div>
+                <button id="updatePost" class="submit-btn">수정 완료</button>
+            </div>
+            
+            <div class="comments-section">
+                <h3>댓글</h3>
+                <div id="comments"></div>
+                <div class="comment-form">
+                    <textarea id="commentText" placeholder="댓글을 입력하세요"></textarea>
+                    <button id="submitComment" class="submit-btn">댓글 등록</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 채널 추가 모달 -->
+    <div id="channelModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" id="closeChannelModal">&times;</span>
+            <h2 class="modal-title">채널 추가</h2>
+            <div class="form-group">
+                <label for="channelName">채널 이름</label>
+                <input type="text" id="channelName" placeholder="채널 이름을 입력하세요 (예: a-빅101)">
+            </div>
+            <div class="form-group">
+                <label for="channelStatus">상태</label>
+                <select id="channelStatus">
+                    <option value="green">초록불 (등장)</option>
+                    <option value="red">빨간불 (잡혔거나 없음)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label for="channelDesc">설명 (선택사항)</label>
+                <textarea id="channelDesc" placeholder="채널에 대한 설명을 입력하세요"></textarea>
+            </div>
+            <p class="warning-text">※ 초록불은 블루 머쉬맘 등장, 빨간불은 잡혔거나 없음일 때 표기해주세요!</p>
+            <button id="submitChannel" class="submit-btn">등록</button>
+        </div>
+    </div>
+
+    <!-- 채널 보기 모달 -->
+    <div id="viewChannelModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" id="closeViewChannelModal">&times;</span>
+            <h2 class="modal-title" id="viewChannelTitle"></h2>
+            <div class="post-info">
+                <div style="display: flex; align-items: center;">
+                    <div class="user-avatar-sm" id="channelAuthorAvatar"></div>
+                    <span id="viewChannelAuthor" style="margin-left: 10px;"></span>
+                </div>
+                <div style="margin-top: 5px;">
+                    <span id="viewChannelDate"></span> | 상태: <span id="viewChannelStatus"></span>
+                    <div id="channelVoteSection" style="float: right;">
+                        <button id="channelLikeBtn" class="like-btn">👍 <span id="channelLikeCount">0</span></button>
+                        <button id="channelDislikeBtn" class="dislike-btn">👎 <span id="channelDislikeCount">0</span></button>
+                    </div>
+                </div>
+                <div id="channelActions" style="margin-top: 10px; display: none;">
+                    <button id="editChannelBtn" class="edit-btn">수정</button>
+                    <button id="deleteChannelBtn" class="delete-btn">삭제</button>
+                </div>
+            </div>
+            <div class="post-content" id="viewChannelContent"></div>
+            
+            <!-- 수정 폼 (기본적으로 숨김) -->
+            <div id="editChannelForm" style="display: none;">
+                <div class="form-group">
+                    <label for="editChannelName">채널 이름</label>
+                    <input type="text" id="editChannelName">
+                </div>
+                <div class="form-group">
+                    <label for="editChannelStatus">상태</label>
+                    <select id="editChannelStatus">
+                        <option value="green">초록불 (등장)</option>
+                        <option value="red">빨간불 (잡았거나 없음)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="editChannelDesc">설명</label>
+                    <textarea id="editChannelDesc"></textarea>
+                </div>
+                <button id="updateChannel" class="submit-btn">수정 완료</button>
+            </div>
+            
+            <div class="comments-section">
+                <h3>댓글</h3>
+                <div id="channelComments"></div>
+                <div class="comment-form">
+                    <textarea id="channelCommentText" placeholder="댓글을 입력하세요"></textarea>
+                    <button id="submitChannelComment" class="submit-btn">댓글 등록</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 로그인 모달 -->
+    <div id="loginModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" id="closeLoginModal">&times;</span>
+            <h2 class="modal-title">로그인</h2>
+            <div class="form-group">
+                <label for="loginEmail">이메일</label>
+                <input type="email" id="loginEmail" placeholder="이메일을 입력하세요">
+            </div>
+            <div class="form-group">
+                <label for="loginPassword">비밀번호</label>
+                <input type="password" id="loginPassword" placeholder="비밀번호를 입력하세요">
+            </div>
+            <button id="submitLogin" class="submit-btn">로그인</button>
+        </div>
+    </div>
+
+    <!-- 회원가입 모달 -->
+    <div id="registerModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" id="closeRegisterModal">&times;</span>
+            <h2 class="modal-title">회원가입</h2>
+            <div class="form-group">
+                <label for="registerEmail">이메일</label>
+                <input type="email" id="registerEmail" placeholder="이메일을 입력하세요">
+            </div>
+            <div class="form-group">
+                <label for="registerNickname">닉네임</label>
+                <input type="text" id="registerNickname" placeholder="사용할 닉네임을 입력하세요">
+            </div>
+            <div class="form-group">
+                <label for="registerPassword">비밀번호</label>
+                <input type="password" id="registerPassword" placeholder="비밀번호를 입력하세요 (6자 이상)">
+            </div>
+            <div class="form-group">
+                <label>프로필 색상 선택</label>
+                <div class="avatar-colors">
+                    <div class="avatar-color selected" style="background-color: #4da6ff;" data-color="#4da6ff"></div>
+                    <div class="avatar-color" style="background-color: #4caf50;" data-color="#4caf50"></div>
+                    <div class="avatar-color" style="background-color: #f44336;" data-color="#f44336"></div>
+                    <div class="avatar-color" style="background-color: #ff9800;" data-color="#ff9800"></div>
+                    <div class="avatar-color" style="background-color: #9c27b0;" data-color="#9c27b0"></div>
+                </div>
+            </div>
+            <button id="submitRegister" class="submit-btn">회원가입</button>
+        </div>
+    </div>
+
+    <!-- 프로필 모달 -->
+    <div id="profileModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" id="closeProfileModal">&times;</span>
+            <div class="profile-header">
+                <div class="profile-avatar" id="profileAvatar"></div>
+                <div class="profile-info">
+                    <div class="profile-username" id="profileUsername"></div>
+                    <div class="profile-email" id="profileEmail"></div>
+                    <div class="profile-stats">
+                        <div class="profile-stat">
+                            <div class="profile-stat-value" id="profilePostCount">0</div>
+                            <div class="profile-stat-label">작성 글</div>
+                        </div>
+                        <div class="profile-stat">
+                            <div class="profile-stat-value" id="profileCommentCount">0</div>
+                            <div class="profile-stat-label">작성 댓글</div>
+                        </div>
+                        <div class="profile-stat">
+                            <div class="profile-stat-value" id="profileLikeCount">0</div>
+                            <div class="profile-stat-label">받은 추천</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="profile-tabs">
+                <div class="profile-tab active" id="postsTab">작성 글</div>
+                <div class="profile-tab" id="commentsTab">작성 댓글</div>
+                <div class="profile-tab" id="settingsTab">프로필 설정</div>
+            </div>
+            
+            <div class="profile-content" id="postsContent">
+                <div id="userPosts"></div>
+            </div>
+            
+            <div class="profile-content" id="commentsContent" style="display: none;">
+                <div id="userComments"></div>
+            </div>
+            
+            <div class="profile-content" id="settingsContent" style="display: none;">
+                <div class="profile-edit-section">
+                    <div class="form-group">
+                        <label for="editNickname">닉네임 변경</label>
+                        <input type="text" id="editNickname" placeholder="새 닉네임 입력">
+                    </div>
+                    <div class="form-group">
+                        <label>프로필 색상 변경</label>
+                        <div class="avatar-colors" id="profileColorOptions">
+                            <div class="avatar-color" style="background-color: #4da6ff;" data-color="#4da6ff"></div>
+                            <div class="avatar-color" style="background-color: #4caf50;" data-color="#4caf50"></div>
+                            <div class="avatar-color" style="background-color: #f44336;" data-color="#f44336"></div>
+                            <div class="avatar-color" style="background-color: #ff9800;" data-color="#ff9800"></div>
+                            <div class="avatar-color" style="background-color: #9c27b0;" data-color="#9c27b0"></div>
+                        </div>
+                    </div>
+                    <button id="saveProfileBtn" class="submit-btn">저장</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="script1-1.js" type="module"></script>
+</body>
+</html>
