@@ -1,329 +1,385 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>메이플랜드 배 출항 시간표</title>
-    <style>
-        body {
-            background: black;
-            text-align: center;
-            color: white;
-            font-family: 'Arial', sans-serif;
-            position: relative;
-        }
-        .background-image {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: url('배.jpg') no-repeat center center/cover;
-            opacity: 0.3;
-            z-index: -1;
-        }
-        .time-board {
-            font-size: 28px;
-            font-weight: bold;
-            background: #222;
-            padding: 10px 20px;
-            border-radius: 12px;
-            display: inline-block;
-            margin: 15px;
-            width: auto;
-            text-align: center;
-            white-space: nowrap;
-            position: relative;
-        }
-        .next-departure {
-            font-size: 18px;
-            color: #ffcc00;
-            margin-top: 5px;
-            display: block;
-        }
-        .boarding-time {
-            font-size: 16px;
-            color: #66ff66;
-            display: inline-block;
-            margin-left: 8px;
-        }
-        .blink-colon {
-            animation: blink 2s steps(2, start) infinite;
-        }
-        @keyframes blink {
-            50% { opacity: 0; }
-        }
-        .container {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            margin-top: 60px;
-        }
-        .row {
-            display: flex;
-            justify-content: center;
-            width: 80%;
-            max-width: 1000px;
-            position: relative;
-        }
-        .time-box {
-            flex: 1;
-            text-align: center;
-            margin: 20px;
-            position: relative;
-        }
-        .staggered-left {
-            transform: translateX(-350px);
-        }
-        .staggered-right {
-            transform: translateX(350px);
-        }
-        
-        /* 배 이미지 스타일 */
-        .ship-icon {
-            position: absolute;
-            width: 60px;
-            height: 40px;
-            top: 50%;
-            transform: translateY(-50%);
-        }
-        
-        /* 오른쪽에 표시되는 배 */
-        .ship-right {
-            right: -70px; /* 시간표 오른쪽에 위치 */
-        }
-        
-        /* 왼쪽에 표시되는 배 */
-        .ship-left {
-            left: -70px; /* 시간표 왼쪽에 위치 */
-        }
-
-        /* 배 움직임용 점 스타일 */
-        .ship-dots {
-            position: absolute;
-            top: 50%;
-            transform: translateY(-50%);
-            font-size: 24px;
-            font-weight: bold;
-            letter-spacing: 2px;
-            display: none;
-        }
-        
-        /* 출항 중일 때만 점 표시 */
-        .sailing .ship-dots {
-            display: inline-block;
-        }
-        
-        /* 오른쪽으로 가는 점 */
-        .dots-right {
-            left: -30px; /* 시간표 왼쪽에 위치 */
-            color: #66ccff;
-        }
-        
-        /* 왼쪽으로 가는 점 */
-        .dots-left {
-            right: -30px; /* 시간표 오른쪽에 위치 */
-            color: #66ccff;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>메이플랜드 배 출항 시간표</title>
+  <meta name="description" content="메이플스토리 정보 모음 - 배 출항 시간표, 몬스터 속성, 육성 가이드 등 제공">
+  <style>
+    /* 공통 스타일 */
+    body {
+      background: black;
+      text-align: center;
+      color: white;
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+      position: relative;
+    }
+    /* 배경 이미지 */
+    .background-image {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: url('배.jpg') no-repeat center center/cover;
+      opacity: 0.3;
+      z-index: -2;
+    }
+    /* 사이드바 관련 */
+    .sidebar {
+      position: fixed;
+      left: -250px;
+      top: 0;
+      width: 250px;
+      height: 100%;
+      background: #333;
+      padding-top: 20px;
+      transition: left 0.3s;
+      box-shadow: 5px 0 10px rgba(0, 0, 0, 0.3);
+      z-index: 1100;
+    }
+    .sidebar.active {
+      left: 0;
+    }
+    .sidebar a {
+      display: block;
+      color: white;
+      padding: 10px;
+      text-decoration: none;
+    }
+    .sidebar a:hover {
+      background: #575757;
+    }
+    .menu-toggle {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      background: #444;
+      color: white;
+      padding: 10px;
+      border: none;
+      cursor: pointer;
+      z-index: 1200;
+    }
+    .menu-toggle.active {
+      display: none;
+    }
+    .close-btn {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      background: none;
+      border: none;
+      font-size: 20px;
+      color: white;
+      cursor: pointer;
+    }
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      z-index: 1050;
+    }
+    .sidebar.active ~ .overlay {
+      display: block;
+    }
+    /* 메인 컨테이너 */
+    .container {
+      margin: auto;
+      padding: 20px;
+      width: 80%;
+      max-width: 1000px;
+      transition: filter 0.3s ease;
+      position: relative;
+      z-index: 1;
+      margin-top: 80px; /* 메뉴 버튼과 겹치지 않게 */
+    }
+    /* 타임보드 및 레이아웃 */
+    h1 {
+      margin-top: 0;
+    }
+    .row {
+      display: flex;
+      justify-content: center;
+      width: 80%;
+      max-width: 1000px;
+      position: relative;
+      margin: 20px auto;
+    }
+    .time-board {
+      font-size: 28px;
+      font-weight: bold;
+      background: #222;
+      padding: 10px 20px;
+      border-radius: 12px;
+      display: inline-block;
+      text-align: center;
+      white-space: nowrap;
+      position: relative;
+    }
+    .staggered-left {
+      transform: translateX(-350px);
+    }
+    .staggered-right {
+      transform: translateX(350px);
+    }
+    .next-departure {
+      font-size: 18px;
+      color: #ffcc00;
+      margin-top: 5px;
+      display: block;
+    }
+    .boarding-time {
+      font-size: 16px;
+      color: #66ff66;
+      display: inline-block;
+      margin-left: 8px;
+    }
+    .blink-colon {
+      animation: blink 2s steps(2, start) infinite;
+    }
+    @keyframes blink {
+      50% { opacity: 0; }
+    }
+    /* 배 아이콘 및 점 */
+    .ship-icon {
+      position: absolute;
+      width: 60px;
+      height: 40px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+    .ship-right {
+      right: -70px;
+    }
+    .ship-left {
+      left: -70px;
+    }
+    .ship-dots {
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 24px;
+      font-weight: bold;
+      letter-spacing: 2px;
+      display: none;
+    }
+    /* 출항 중일 때 점 표시 */
+    .sailing .ship-dots {
+      display: inline-block;
+    }
+    .dots-right {
+      left: -30px;
+      color: #66ccff;
+    }
+    .dots-left {
+      right: -30px;
+      color: #66ccff;
+    }
+  </style>
 </head>
 <body>
-    <div class="background-image"></div>
+  <div class="background-image"></div>
+  <!-- 메뉴 토글 버튼 -->
+  <button class="menu-toggle" id="menuButton" onclick="toggleMenu()">메뉴</button>
+  <!-- 사이드바 -->
+  <div class="sidebar" id="sidebar">
+    <button class="close-btn" onclick="toggleMenu()">✖</button>
+    <a href="/">공식 홈페이지</a>
+  </div>
+  <!-- 오버레이 -->
+  <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
+  
+  <!-- 메인 컨텐츠 -->
+  <div class="container" id="container">
     <h1>메이플랜드 배 출항 시간표</h1>
-    <div class="container">
-        <div class="row">
-            <div class="time-box time-board staggered-left" id="status1">
-                로딩 중...
-                <span id="next1" class="next-departure"></span>
-            </div>
-        </div>
-        <div class="row">
-            <div class="time-box time-board staggered-right" id="status2">
-                로딩 중...
-                <span id="next2" class="next-departure"></span>
-            </div>
-        </div>
-        <div class="row">
-            <div class="time-box time-board staggered-left" id="status3">
-                로딩 중...
-                <span id="next3" class="next-departure"></span>
-            </div>
-        </div>
-        <div class="row">
-            <div class="time-box time-board staggered-right" id="status4">
-                로딩 중...
-                <span id="next4" class="next-departure"></span>
-            </div>
-        </div>
-        <div class="row">
-            <div class="time-box time-board staggered-left" id="status5">
-                로딩 중...
-                <span id="next5" class="next-departure"></span>
-            </div>
-        </div>
-        <div class="row">
-            <div class="time-box time-board staggered-right" id="status6">
-                로딩 중...
-                <span id="next6" class="next-departure"></span>
-            </div>
-        </div>
+    <div class="row">
+      <div class="time-board staggered-left" id="status1">
+        로딩 중...
+        <span id="next1" class="next-departure"></span>
+      </div>
     </div>
+    <div class="row">
+      <div class="time-board staggered-right" id="status2">
+        로딩 중...
+        <span id="next2" class="next-departure"></span>
+      </div>
+    </div>
+    <div class="row">
+      <div class="time-board staggered-left" id="status3">
+        로딩 중...
+        <span id="next3" class="next-departure"></span>
+      </div>
+    </div>
+    <div class="row">
+      <div class="time-board staggered-right" id="status4">
+        로딩 중...
+        <span id="next4" class="next-departure"></span>
+      </div>
+    </div>
+    <div class="row">
+      <div class="time-board staggered-left" id="status5">
+        로딩 중...
+        <span id="next5" class="next-departure"></span>
+      </div>
+    </div>
+    <div class="row">
+      <div class="time-board staggered-right" id="status6">
+        로딩 중...
+        <span id="next6" class="next-departure"></span>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // 사이드바 토글 함수
+    function toggleMenu() {
+      let sidebar = document.getElementById("sidebar");
+      let overlay = document.getElementById("overlay");
+      let menuToggle = document.getElementById("menuButton");
+      let container = document.getElementById("container");
+      
+      if (sidebar.classList.contains("active")) {
+        sidebar.style.left = "-250px";
+        sidebar.classList.remove("active");
+        overlay.style.display = "none";
+        menuToggle.style.display = "block";
+        document.body.style.overflow = "";
+        container.style.filter = "none";
+      } else {
+        sidebar.style.left = "0px";
+        sidebar.classList.add("active");
+        overlay.style.display = "block";
+        menuToggle.style.display = "none";
+        document.body.style.overflow = "hidden";
+        container.style.filter = "blur(3px)";
+      }
+    }
     
-    <script>
-        // 각 노선별 배 이미지 경로
-        const shipImages = {
-            victoriaOrbis: 'orbis.png',
-            orbisVictoria: 'orbis.png',
-            orbisLudibrium: 'ludibrium.png',
-            ludibriumOrbis: 'ludibrium.png',
-            orbisLeafre: 'lifre.png',
-            leafreOrbis: 'lifre.png'
-        };
-        
-        // 이미지 파일이 없을 경우를 대비한 기본 이미지 (SVG)
-        const defaultShipImage = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cGF0aCBmaWxsPSJ3aGl0ZSIgZD0iTTQ5NiA0NDhIODAgMTYgMEw2NCAzODRoMzJsLTE2LTY0VjI4OGwxNi02NGMwIDAgOTYgMzIgMTI4IDMyaDI1NnYtMzJsNjQtMzJoLTMyVjE2MEwzNTIgOTZoNDhsLTMyLTMyaC00OGwtMzIgMzJoMzJsLTMyIDY0djMyaC02NEwyMjQgOTZsLTk2IDk2djE2MGwtMTYgNjRoMzJsMTYgNjRoMTkybDgtMzJoODBsOCAzMkw0OTYgNDQ4eiIvPjwvc3ZnPg==';
-        
-        // 정확한 메이플스토리 배 시간표 로직
-        function getShipStatus(minutes, interval) {
-            // 현재 시간을 기준으로 interval 주기 계산
-            let currentSlot = Math.floor(minutes / interval) * interval;
-            let departureTime = currentSlot;
-            
-            // 15분 간격 배는 10분 출항 시간, 10분 간격 배는 5분 출항 시간
-            let sailingDuration = interval === 15 ? 10 : 5;
-            
-            // 현재 시간이 출항 시간부터 시작해서 sailingDuration분간은 "출항 중"
-            if (minutes >= departureTime && minutes < departureTime + sailingDuration) {
-                return "출항 중";
-            } else {
-                return "탑승 가능";
-            }
+    // Ship schedule 관련 함수들
+    const shipImages = {
+      victoriaOrbis: 'orbis.png',
+      orbisVictoria: 'orbis.png',
+      orbisLudibrium: 'ludibrium.png',
+      ludibriumOrbis: 'ludibrium.png',
+      orbisLeafre: 'lifre.png',
+      leafreOrbis: 'lifre.png'
+    };
+    
+    const defaultShipImage = 'data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA1MTIgNTEyIj48cGF0aCBmaWxsPSJ3aGl0ZSIgZD0iTTQ5NiA0NDhIODAgMTYgMEw2NCAzODRoMzJsLTE2LTY0VjI4OGwxNi02NGMwIDAgOTYgMzIgMTI4IDMyaDI1NnYtMzJsNjQtMzJoLTMyVjE2MEwzNTIgOTZoNDhsLTMyLTMyaC00OGwtMzIgMzJoMzJsLTMyIDY0djMyaC02NEwyMjQgOTZsLTk2IDk2djE2MGwtMTYgNjRoMzJsMTYgNjRoMTkybDgtMzJoODBsOCAzMkw0OTYgNDQ4eiIvPjwvc3ZnPg==';
+    
+    function getShipStatus(minutes, interval) {
+      let currentSlot = Math.floor(minutes / interval) * interval;
+      let sailingDuration = interval === 15 ? 10 : 5;
+      if (minutes >= currentSlot && minutes < currentSlot + sailingDuration) {
+        return "출항 중";
+      } else {
+        return "탑승 가능";
+      }
+    }
+    
+    function getNextDepartureInfo(hours, minutes, interval) {
+      const currentSlot = Math.floor(minutes / interval) * interval;
+      const currentDepartureTime = currentSlot;
+      const sailingDuration = interval === 15 ? 10 : 5;
+      const isCurrentlyDeparting = minutes >= currentDepartureTime && minutes < currentDepartureTime + sailingDuration;
+      
+      let nextDepartureMinutes;
+      let nextDepartureHours = hours;
+      
+      if (isCurrentlyDeparting || minutes >= currentSlot) {
+        nextDepartureMinutes = (currentSlot + interval) % 60;
+        if (nextDepartureMinutes < currentSlot) {
+          nextDepartureHours = (hours + 1) % 24;
         }
-        
-        function getNextDepartureInfo(hours, minutes, interval) {
-            // 현재 시간이 속한 슬롯 계산
-            const currentSlot = Math.floor(minutes / interval) * interval;
-            
-            // 현재 슬롯의 출항 시간
-            const currentDepartureTime = currentSlot;
-            
-            // 출항 시간 (10분 또는 5분)
-            const sailingDuration = interval === 15 ? 10 : 5;
-            
-            // 현재 시간이 출항 중인지 확인
-            const isCurrentlyDeparting = minutes >= currentDepartureTime && minutes < currentDepartureTime + sailingDuration;
-            
-            let nextDepartureMinutes;
-            let nextDepartureHours = hours;
-            
-            // 다음 출항 시간 계산
-            if (isCurrentlyDeparting || minutes >= currentSlot) {
-                // 출항 중이거나 현재 슬롯 시간이 지났으면 다음 슬롯이 다음 출항
-                nextDepartureMinutes = (currentSlot + interval) % 60;
-                if (nextDepartureMinutes < currentSlot) {
-                    // 다음 출항이 다음 시간대
-                    nextDepartureHours = (hours + 1) % 24;
-                }
-            } else {
-                // 아직 현재 슬롯에 도달하지 않았으면 현재 슬롯이 다음 출항
-                nextDepartureMinutes = currentSlot;
-            }
-            
-            // 탑승 가능 시간 계산 (출항 5분 전부터)
-            const boardingStartMinutes = (nextDepartureMinutes - 5 + 60) % 60;
-            const boardingStartHours = boardingStartMinutes > nextDepartureMinutes ? (nextDepartureHours - 1 + 24) % 24 : nextDepartureHours;
-            
-            const boardingEndMinutes = (nextDepartureMinutes - 1 + 60) % 60;
-            const boardingEndHours = boardingEndMinutes > nextDepartureMinutes ? (nextDepartureHours - 1 + 24) % 24 : nextDepartureHours;
-            
-            const nextDepartureTime = `${String(nextDepartureHours).padStart(2, '0')}:${String(nextDepartureMinutes).padStart(2, '0')}`;
-            const boardingTimeInfo = `${String(boardingStartHours).padStart(2, '0')}:${String(boardingStartMinutes).padStart(2, '0')} - ${String(boardingEndHours).padStart(2, '0')}:${String(boardingEndMinutes).padStart(2, '0')}분까지 탑승 대기`;
-            
-            return {
-                nextDepartureTime, 
-                boardingTimeInfo
-            };
+      } else {
+        nextDepartureMinutes = currentSlot;
+      }
+      
+      const boardingStartMinutes = (nextDepartureMinutes - 5 + 60) % 60;
+      const boardingStartHours = boardingStartMinutes > nextDepartureMinutes ? (nextDepartureHours - 1 + 24) % 24 : nextDepartureHours;
+      const boardingEndMinutes = (nextDepartureMinutes - 1 + 60) % 60;
+      const boardingEndHours = boardingEndMinutes > nextDepartureMinutes ? (nextDepartureHours - 1 + 24) % 24 : nextDepartureHours;
+      
+      const nextDepartureTime = `${String(nextDepartureHours).padStart(2, '0')}:${String(nextDepartureMinutes).padStart(2, '0')}`;
+      const boardingTimeInfo = `${String(boardingStartHours).padStart(2, '0')}:${String(boardingStartMinutes).padStart(2, '0')} - ${String(boardingEndHours).padStart(2, '0')}:${String(boardingEndMinutes).padStart(2, '0')}분까지 탑승 대기`;
+      
+      return { nextDepartureTime, boardingTimeInfo };
+    }
+    
+    function handleImageError(img) {
+      img.onerror = null;
+      img.src = defaultShipImage;
+      return true;
+    }
+    
+    function updateMovingDots() {
+      const dotsElements = document.querySelectorAll('.ship-dots');
+      dotsElements.forEach(dots => {
+        if (dots.parentElement.classList.contains('sailing')) {
+          if (dots.innerText === '...') {
+            dots.innerText = '.  ';
+          } else if (dots.innerText === '.  ') {
+            dots.innerText = '.. ';
+          } else {
+            dots.innerText = '...';
+          }
         }
-        
-        // 이미지 로드 오류 처리 함수
-        function handleImageError(img) {
-            img.onerror = null; // 무한 루프 방지
-            img.src = defaultShipImage; // 기본 이미지로 대체
-            return true;
-        }
-        
-        // 움직이는 점 애니메이션을 위한 함수
-        function updateMovingDots() {
-            const dotsElements = document.querySelectorAll('.ship-dots');
-            dotsElements.forEach(dots => {
-                if (dots.parentElement.classList.contains('sailing')) {
-                    // 애니메이션 효과를 위해 점의 패턴 변경
-                    if (dots.innerText === '...') {
-                        dots.innerText = '.  ';
-                    } else if (dots.innerText === '.  ') {
-                        dots.innerText = '.. ';
-                    } else {
-                        dots.innerText = '...';
-                    }
-                }
-            });
-        }
-        
-        // 애니메이션을 위한 타이머 시작
-        setInterval(updateMovingDots, 500);
-        
-        function updateStatus() {
-            const now = new Date();
-            const hours = now.getHours();
-            const minutes = now.getMinutes();
-            const formattedHours = hours.toString().padStart(2, '0');
-            const formattedMinutes = minutes.toString().padStart(2, '0');
-            const currentTime = `(${formattedHours}<span class='blink-colon'>:</span>${formattedMinutes})`;
-            
-            // 각 노선별 업데이트
-            updateRouteStatus(1, "빅토리아 아일랜드 -> 오르비스", hours, minutes, 15, currentTime, "right", shipImages.victoriaOrbis);
-            updateRouteStatus(2, "빅토리아 아일랜드 <- 오르비스", hours, minutes, 15, currentTime, "left", shipImages.orbisVictoria);
-            updateRouteStatus(3, "오르비스 -> 루디브리엄", hours, minutes, 10, currentTime, "right", shipImages.orbisLudibrium);
-            updateRouteStatus(4, "오르비스 <- 루디브리엄", hours, minutes, 10, currentTime, "left", shipImages.ludibriumOrbis);
-            updateRouteStatus(5, "오르비스 -> 리프레", hours, minutes, 10, currentTime, "right", shipImages.orbisLeafre);
-            updateRouteStatus(6, "오르비스 <- 리프레", hours, minutes, 10, currentTime, "left", shipImages.leafreOrbis);
-        }
-        
-        function updateRouteStatus(index, routeName, hours, minutes, interval, currentTime, direction, shipImageSrc) {
-            // 상태 계산
-            const status = getShipStatus(minutes, interval);
-            const { nextDepartureTime, boardingTimeInfo } = getNextDepartureInfo(hours, minutes, interval);
-            
-            // 표시할 HTML 생성
-            const statusId = `status${index}`;
-            const nextId = `next${index}`;
-            
-            const statusElement = document.getElementById(statusId);
-            
-            // 출항 중인지에 따라 클래스 추가/제거
-            if (status === "출항 중") {
-                statusElement.classList.add('sailing');
-            } else {
-                statusElement.classList.remove('sailing');
-            }
-            
-            // 기본 상태 텍스트 및 배 이미지 업데이트
-            statusElement.innerHTML = `
-                ${routeName} : ${status} ${currentTime}
-                <img src="${shipImageSrc}" class="ship-icon ship-${direction}" onerror="handleImageError(this)">
-                <span class="ship-dots dots-${direction}">..</span>
-                <span id="${nextId}" class="next-departure">다음 출항 예정 시간 : ${nextDepartureTime}
-                    <span class="boarding-time">(${boardingTimeInfo})</span>
-                </span>
-            `;
-        }
-        
-        // 이미지 로드 오류 처리를 위한 전역 함수
-        window.handleImageError = handleImageError;
-        
-        // 1초마다 업데이트
-        setInterval(updateStatus, 1000);
-        updateStatus();
-    </script>
+      });
+    }
+    
+    setInterval(updateMovingDots, 500);
+    
+    function updateStatus() {
+      const now = new Date();
+      const hours = now.getHours();
+      const minutes = now.getMinutes();
+      const formattedHours = hours.toString().padStart(2, '0');
+      const formattedMinutes = minutes.toString().padStart(2, '0');
+      const currentTime = `(${formattedHours}<span class='blink-colon'>:</span>${formattedMinutes})`;
+      
+      updateRouteStatus(1, "빅토리아 아일랜드 -> 오르비스", hours, minutes, 15, currentTime, "right", shipImages.victoriaOrbis);
+      updateRouteStatus(2, "빅토리아 아일랜드 <- 오르비스", hours, minutes, 15, currentTime, "left", shipImages.orbisVictoria);
+      updateRouteStatus(3, "오르비스 -> 루디브리엄", hours, minutes, 10, currentTime, "right", shipImages.orbisLudibrium);
+      updateRouteStatus(4, "오르비스 <- 루디브리엄", hours, minutes, 10, currentTime, "left", shipImages.ludibriumOrbis);
+      updateRouteStatus(5, "오르비스 -> 리프레", hours, minutes, 10, currentTime, "right", shipImages.orbisLeafre);
+      updateRouteStatus(6, "오르비스 <- 리프레", hours, minutes, 10, currentTime, "left", shipImages.leafreOrbis);
+    }
+    
+    function updateRouteStatus(index, routeName, hours, minutes, interval, currentTime, direction, shipImageSrc) {
+      const status = getShipStatus(minutes, interval);
+      const { nextDepartureTime, boardingTimeInfo } = getNextDepartureInfo(hours, minutes, interval);
+      
+      const statusId = `status${index}`;
+      const nextId = `next${index}`;
+      
+      const statusElement = document.getElementById(statusId);
+      
+      if (status === "출항 중") {
+        statusElement.classList.add('sailing');
+      } else {
+        statusElement.classList.remove('sailing');
+      }
+      
+      statusElement.innerHTML = `
+        ${routeName} : ${status} ${currentTime}
+        <img src="${shipImageSrc}" class="ship-icon ship-${direction}" onerror="handleImageError(this)">
+        <span class="ship-dots dots-${direction}">..</span>
+        <span id="${nextId}" class="next-departure">다음 출항 예정 시간 : ${nextDepartureTime}
+          <span class="boarding-time">(${boardingTimeInfo})</span>
+        </span>
+      `;
+    }
+    
+    setInterval(updateStatus, 1000);
+    updateStatus();
+  </script>
 </body>
 </html>
