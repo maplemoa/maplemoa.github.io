@@ -3,15 +3,30 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="메이플랜드 블루 머쉬맘 제보 게시판 - 실시간 목격 정보 공유">
-    <meta name="keywords" content="메이플스토리, 메이플랜드, 배 출항, 블루 머쉬맘 게시판, 찰리중사, 메이플 공략, 블루 머쉬맘">
-    <meta name="author" content="MapleMoa">
-    <meta name="robots" content="index, follow">
+    <meta name="description" content="블루 머쉬맘 제보 게시판 - 실시간 목격 정보 공유">
     <title>블루 머쉬맘 게시판</title>
     <style>
+        :root {
+            --background: #1e1e1e;
+            --secondary-bg: #282828;
+            --tertiary-bg: #333;
+            --input-bg: #444;
+            --text-color: white;
+            --border-color: #444;
+            --accent-color: #4da6ff;
+        }
+        body.light-theme {
+            --background: #f5f5f5;
+            --secondary-bg: #ffffff;
+            --tertiary-bg: #eeeeee;
+            --input-bg: #ffffff;
+            --text-color: #333333;
+            --border-color: #dddddd;
+            --accent-color: #4da6ff;
+        }
         body {
-            background: #1e1e1e;
-            color: white;
+            background: var(--background);   
+            color: var(--text-color);        
             font-family: 'Arial', sans-serif;
             margin: 0;
             padding: 0;
@@ -20,14 +35,30 @@
             overflow-x: hidden;
         }
         .header {
-            background: #333;
+            background: var(--tertiary-bg);
             padding: 20px;
             display: flex;
-            padding-left: 80px;
             justify-content: space-between;
             align-items: center;
             position: relative;
             z-index: 1000;
+        }
+        .theme-toggle {
+            background: var(--tertiary-bg);
+            color: var(--text-color);
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            margin-left: 10px;
+        }
+        .theme-toggle svg {
+            width: 20px;
+            height: 20px;
         }
         .auth-section {
             display: flex;
@@ -66,7 +97,7 @@
             background: #4da6ff;
         }
         .board {
-            background: #282828;
+            background: var(--secondary-bg);
             padding: 10px;
             border-radius: 8px;
             box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.4);
@@ -81,17 +112,16 @@
             text-align: left;
         }
         .post-list tr:hover {
-            background: #333;
+            background: var(--tertiary-bg);
             cursor: pointer;
         }
-        /* 제목 열을 넓히고, 너무 길 경우 "..." 처리 */
         .post-list th:nth-child(2), 
         .post-list td:nth-child(2) {
-            width: 40%; /* 제목을 전체 테이블의 40% 차지 */
-            max-width: 400px; /* 제목이 너무 길어지지 않도록 제한 */
-            white-space: nowrap; /* 한 줄로 유지 */
+            width: 40%;
+            max-width: 400px;
+            white-space: nowrap;
             overflow: hidden;
-            text-overflow: ellipsis; /* 길면 ...으로 표시 */
+            text-overflow: ellipsis;
         }
         .action-btn {
             background: #4da6ff;
@@ -150,31 +180,29 @@
         .pagination button.active {
             background: #4da6ff;
         }
-
-        /* 채널 탭 스타일 */
         .channels-container {
             display: flex;
             flex-wrap: wrap;
-            gap: 1px; /* 카드 사이 간격 */
+            gap: 1px;
         }
         .channel-card {
-            width: 40px; /* 더 작게 */
-            height: 20px; /* 높이도 줄이기 */
-            padding: 1px; /* 내부 여백 최소화 */
-            font-size: 6px; /* 글자 크기 축소 */
+            width: 40px;
+            height: 20px;
+            padding: 1px;
+            font-size: 6px;
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
-            border-radius: 3px; /* 둥근 모서리 줄이기 */
+            border-radius: 3px;
         }
         .channel-box {
-            background: #333;
+            background: var(--tertiary-bg);
+            color: var(--text-color);
             border-radius: 3px;
             padding: 8px;
             position: relative;
         }
-        
         .channel-box.green {
             border-left: 4px solid #4caf50;
         }
@@ -182,6 +210,7 @@
             border-left: 4px solid #f44336;
         }
         .channel-name {
+            color: var(--text-color);
             font-weight: bold;
             margin-bottom: 8px;
             font-size: 0.9em;
@@ -196,8 +225,6 @@
             justify-content: space-between;
             margin-top: 10px;
         }
-
-        /* 메뉴 토글 버튼 */
         .menu-toggle {
             position: absolute;
             top: 50%;
@@ -213,8 +240,6 @@
         .menu-toggle.active {
             display: none;
         }
-
-        /* 사이드바 메뉴 */
         .sidebar {
             position: fixed;
             top: 0;
@@ -236,8 +261,6 @@
             padding: 10px;
             text-decoration: none;
         }
-
-        /* 사이드바 내 닫기 버튼 */
         .close-btn {
             position: absolute;
             top: 10px;
@@ -248,8 +271,6 @@
             color: white;
             cursor: pointer;
         }
-
-        /* 오버레이 (메뉴 활성 시 배경 흐리게 처리) */
         .overlay {
             position: fixed;
             top: 0;
@@ -263,8 +284,6 @@
         .sidebar.active ~ .overlay {
             display: block;
         }
-
-        /* 모달 스타일 */
         .modal {
             display: none;
             position: fixed;
@@ -276,7 +295,8 @@
             z-index: 2000;
         }
         .modal-content {
-            background-color: #333;
+            background-color: var(--secondary-bg);
+            color: var(--text-color);
             margin: 10% auto;
             padding: 20px;
             width: 70%;
@@ -348,21 +368,21 @@
             cursor: pointer;
         }
         .post-info {
-            background: #444;
+            background: var(--tertiary-bg);
+            color: var(--text-color);
             padding: 10px;
             border-radius: 5px;
             margin-bottom: 15px;
             font-size: 0.9em;
         }
         .post-content {
-            background: #383838;
+            background: var(--secondary-bg);
+            color: var(--text-color);
             padding: 15px;
             border-radius: 5px;
             margin-bottom: 20px;
             min-height: 100px;
         }
-
-        /* 댓글 섹션 스타일 수정 - 펨코 스타일로 */
         .comments-section {
             margin-top: 20px;
             max-height: 400px;
@@ -378,21 +398,22 @@
             padding-bottom: 20px;
         }
         #comments::-webkit-scrollbar, #channelComments::-webkit-scrollbar {
-        width: 8px;
+            width: 8px;
         }
         #comments::-webkit-scrollbar-track, #channelComments::-webkit-scrollbar-track {
-        background: #333;
-        border-radius: 4px;
+            background: #333;
+            border-radius: 4px;
         }
         #comments::-webkit-scrollbar-thumb, #channelComments::-webkit-scrollbar-thumb {
-        background: #555;
-        border-radius: 4px;
+            background: #555;
+            border-radius: 4px;
         }
         #comments::-webkit-scrollbar-thumb:hover, #channelComments::-webkit-scrollbar-thumb:hover {
-        background: #666;
+            background: #666;
         }
         .comment {
-            background: #383838;
+            background: var(--tertiary-bg);
+            color: var(--text-color);
             padding: 10px;
             border-radius: 5px;
             margin-bottom: 13px;
@@ -410,7 +431,7 @@
             gap: 10px;
         }
         .comment-form {
-            background: #333;
+            background: var(--tertiary-bg);
             padding: 10px;
             border-radius: 5px;
             margin-top: 10px;
@@ -421,16 +442,14 @@
         .comment-form textarea {
             width: 100%;
             padding: 8px;
-            background: #444;
-            border: 1px solid #555;
-            color: white;
+            background: var(--input-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
             border-radius: 3px;
             min-height: 60px;
             resize: vertical;
             margin-bottom: 10px;
         }
-
-        /* 스크롤바 스타일링 */
         .comments-section::-webkit-scrollbar {
             width: 8px;
         }
@@ -445,7 +464,29 @@
         .comments-section::-webkit-scrollbar-thumb:hover {
             background: #666;
         }
-
+        .user-popup {
+            position: fixed;
+            top: 100px;
+            right: 20px;
+            width: 250px;
+            background: var(--secondary-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+            display: none;
+            z-index: 1000;
+        }
+        .user-name {
+            font-size: 0.9em;
+            color: white;
+        }
+        .user-popup h3 {
+            margin-top: 0;
+            text-align: center;
+            color: #4da6ff;
+        }
         .user-avatar {
             width: 40px;
             height: 40px;
@@ -482,8 +523,6 @@
             border-radius: 3px;
             margin-left: 10px;
         }
-
-        /* 프로필 모달 스타일 */
         .profile-header {
             display: flex;
             align-items: center;
@@ -562,6 +601,228 @@
         .avatar-color.selected {
             border: 2px solid white;
         }
+        .chat-button {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 60px;
+            height: 60px;
+            background: #4da6ff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            z-index: 999;
+        }
+        .chat-counter {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background: #ff4d4d;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .chat-popup {
+            position: fixed;
+            bottom: 90px;
+            right: 20px;
+            width: 1000px;
+            height: 600px;
+            background: var(--secondary-bg);
+            border-radius: 8px;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+            z-index: 998;
+            display: none;
+        }
+        .chat-popup-header {
+            background: #4da6ff;
+            color: white;
+            padding: 10px 15px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .header-right {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .chat-popup-header h3 {
+            margin: 0;
+            font-size: 16px;
+        }
+        .chat-popup-header span {
+            cursor: pointer;
+            font-size: 18px;
+        }
+        .chat-header {
+            background: #4da6ff;
+            color: white;
+            padding: 15px;
+            text-align: center;
+        }
+        #toggleUsers {
+            background: #333;
+            border: none;
+            color: #fff;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #closeChat {
+            cursor: pointer;
+            font-size: 18px;
+        }
+        .chat-messages {
+            flex: 1;
+            padding: 10px;
+            overflow-y: auto;
+            background: var(--tertiary-bg);
+            color: var(--text-color);
+        }
+        .chat-message {
+            display: flex;
+            margin-bottom: 10px;
+        }
+        .my-message {
+            justify-content: flex-end;
+        }
+        .other-message {
+            justify-content: flex-start;
+        }
+        .chat-message span.author {
+            font-weight: bold;
+            margin-right: 5px;
+            color: #4da6ff;
+        }
+        .chat-message span.time {
+            font-size: 0.8em;
+            color: #aaa;
+        }
+        .message-bubble {
+            max-width: 60%;
+            background: var(--tertiary-bg);
+            border-radius: 12px;
+            padding: 8px 12px;
+            position: relative;
+            animation: fadeInUp 0.2s ease-in-out;
+            color: var(--text-color);
+        }
+        .my-message .message-bubble {
+            background: #4da6ff;
+        }
+        .other-message .message-bubble::after {
+            content: "";
+            position: absolute;
+            top: 10px;
+            left: -10px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: transparent #444 transparent transparent;
+        }
+        .my-message .message-bubble::after {
+            content: "";
+            position: absolute;
+            top: 10px;
+            right: -10px;
+            border-width: 5px;
+            border-style: solid;
+            border-color: transparent transparent transparent #4da6ff;
+        }
+        .chat-input {
+            display: flex;
+            padding: 10px;
+            background: var(--tertiary-bg);
+        }
+        .chat-input input {
+            flex: 1;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 3px;
+            background: var(--input-bg);
+            color: var(--text-color);
+        }
+        .chat-input button {
+            margin-left: 10px;
+            padding: 8px 15px;
+            background: #4da6ff;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .users-container {
+            max-height: 120px;
+            overflow-y: auto;
+            padding: 10px;
+            background: #333;
+            border-left: 1px solid #444;
+        }
+        #userList {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .users-container h3 {
+            margin-top: 0;
+            text-align: center;
+            color: #4da6ff;
+        }
+        .user-item {
+            display: flex;
+            align-items: center;
+            padding: 5px;
+            margin-bottom: 5px;
+            background: var(--tertiary-bg);
+            color: var(--text-color);
+            border-radius: 5px;
+        }
+        .chat-messages::-webkit-scrollbar,
+        .users-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        .chat-messages::-webkit-scrollbar-track,
+        .users-container::-webkit-scrollbar-track {
+            background: #333;
+        }
+        .chat-messages::-webkit-scrollbar-thumb,
+        .users-container::-webkit-scrollbar-thumb {
+            background: #555;
+            border-radius: 3px;
+        }
+        .chat-messages::-webkit-scrollbar-thumb:hover,
+        .users-container::-webkit-scrollbar-thumb:hover {
+            background: #666;
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #333;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+            opacity: 0;
+            transition: opacity 0.5s;
+            z-index: 9999;
+        }
     </style>
 </head>
 <body>
@@ -571,6 +832,11 @@
         <div class="auth-section">
             <p id="loginStatus">로그인이 필요합니다.</p>
             <div id="userAvatar" class="user-avatar" style="display: none;" onclick="openProfileModal()"></div>
+            <button id="themeToggle" class="theme-toggle" title="테마 변경">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+                </svg>
+            </button>
             <button id="registerBtn">회원가입</button>
             <button id="loginBtn">로그인</button>
             <button id="logoutBtn" style="display: none;">로그아웃</button>
@@ -578,22 +844,18 @@
     </div>
     <div class="sidebar" id="sidebar">
         <button class="close-btn" onclick="toggleMenu()">✖</button>
-        <a href="/">공식 홈페이지</a>
+        <a href="#">공식 홈페이지</a>
     </div>
     <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
-
     <div class="container">
         <div class="tab-buttons">
           <button id="boardTabBtn" class="tab-button active">게시판</button>
           <button id="channelTabBtn" class="tab-button">채널</button>
         </div>
-        
-        <!-- 게시판 탭 -->
         <div id="boardTab" class="board">
           <div class="action-btn-container">
             <button class="action-btn" id="writePostBtn" style="display: none;">글쓰기</button>
           </div>
-          
           <table class="post-list">
             <thead>
               <tr>
@@ -608,25 +870,17 @@
             </thead>
             <tbody id="post-list-body"></tbody>
           </table>
-
-          <!-- 검색창을 페이지네이션 아래로 이동 -->
           <div class="search-section">
             <input type="text" id="searchInput" class="search-input" placeholder="검색어 입력...">
             <button id="searchBtn" class="search-button">검색</button>
           </div>
-          
-          <!-- 페이지네이션 -->
           <div class="pagination" id="pagination"></div>
         </div>
-        
-        <!-- 채널 탭 -->
         <div id="channelTab" class="board" style="display: none;">
           <button class="action-btn" id="addChannelBtn">채널 추가</button>
           <div class="channels-container" id="channelsContainer"></div>
         </div>
       </div>
-
-    <!-- 글쓰기 모달 -->
     <div id="writeModal" class="modal">
         <div class="modal-content">
             <span class="close-modal" id="closeWriteModal">&times;</span>
@@ -642,8 +896,6 @@
             <button id="submitPost" class="submit-btn">등록</button>
         </div>
     </div>
-
-    <!-- 글 보기 모달 -->
     <div id="viewModal" class="modal">
         <div class="modal-content">
             <span class="close-modal" id="closeViewModal">&times;</span>
@@ -666,8 +918,6 @@
                 </div>
             </div>
             <div class="post-content" id="viewContent"></div>
-            
-            <!-- 수정 폼 (기본적으로 숨김) -->
             <div id="editForm" style="display: none;">
                 <div class="form-group">
                     <label for="editTitle">제목</label>
@@ -679,7 +929,6 @@
                 </div>
                 <button id="updatePost" class="submit-btn">수정 완료</button>
             </div>
-            
             <div class="comments-section">
                 <h3>댓글</h3>
                 <div id="comments"></div>
@@ -690,8 +939,6 @@
             </div>
         </div>
     </div>
-
-    <!-- 채널 추가 모달 -->
     <div id="channelModal" class="modal">
         <div class="modal-content">
             <span class="close-modal" id="closeChannelModal">&times;</span>
@@ -715,8 +962,6 @@
             <button id="submitChannel" class="submit-btn">등록</button>
         </div>
     </div>
-
-    <!-- 채널 보기 모달 -->
     <div id="viewChannelModal" class="modal">
         <div class="modal-content">
             <span class="close-modal" id="closeViewChannelModal">&times;</span>
@@ -739,8 +984,6 @@
                 </div>
             </div>
             <div class="post-content" id="viewChannelContent"></div>
-            
-            <!-- 수정 폼 (기본적으로 숨김) -->
             <div id="editChannelForm" style="display: none;">
                 <div class="form-group">
                     <label for="editChannelName">채널 이름</label>
@@ -759,7 +1002,6 @@
                 </div>
                 <button id="updateChannel" class="submit-btn">수정 완료</button>
             </div>
-            
             <div class="comments-section">
                 <h3>댓글</h3>
                 <div id="channelComments"></div>
@@ -770,8 +1012,6 @@
             </div>
         </div>
     </div>
-
-    <!-- 로그인 모달 -->
     <div id="loginModal" class="modal">
         <div class="modal-content">
             <span class="close-modal" id="closeLoginModal">&times;</span>
@@ -787,8 +1027,6 @@
             <button id="submitLogin" class="submit-btn">로그인</button>
         </div>
     </div>
-
-    <!-- 회원가입 모달 -->
     <div id="registerModal" class="modal">
         <div class="modal-content">
             <span class="close-modal" id="closeRegisterModal">&times;</span>
@@ -818,8 +1056,29 @@
             <button id="submitRegister" class="submit-btn">회원가입</button>
         </div>
     </div>
-
-    <!-- 프로필 모달 -->
+    <div id="chatButton" class="chat-button">
+        <span>💬</span>
+        <span class="chat-counter" id="userCount">0</span>
+    </div>
+    <div id="chatPopup" class="chat-popup">
+        <div class="chat-popup-header">
+            <h3>실시간 채팅</h3>
+            <div class="header-right">
+              <button id="toggleUsers">접속 유저 보기</button>
+              <span id="closeChat">✖</span>
+            </div>
+        </div>
+        <div id="popupChatMessages" class="chat-messages"></div>
+        <div class="chat-input">
+          <input type="text" id="popupChatInput" placeholder="메시지를 입력하세요..." />
+          <button id="popupSendBtn">전송</button>
+        </div>
+    </div>
+    <div id="userPopup" class="user-popup">
+        <h3>접속 유저</h3>
+        <div id="userList"></div>
+    </div>
+    <div id="toast" class="toast"></div>
     <div id="profileModal" class="modal">
         <div class="modal-content">
             <span class="close-modal" id="closeProfileModal">&times;</span>
@@ -844,21 +1103,17 @@
                     </div>
                 </div>
             </div>
-            
             <div class="profile-tabs">
                 <div class="profile-tab active" id="postsTab">작성 글</div>
                 <div class="profile-tab" id="commentsTab">작성 댓글</div>
                 <div class="profile-tab" id="settingsTab">프로필 설정</div>
             </div>
-            
             <div class="profile-content" id="postsContent">
                 <div id="userPosts"></div>
             </div>
-            
             <div class="profile-content" id="commentsContent" style="display: none;">
                 <div id="userComments"></div>
             </div>
-            
             <div class="profile-content" id="settingsContent" style="display: none;">
                 <div class="profile-edit-section">
                     <div class="form-group">
@@ -880,6 +1135,6 @@
             </div>
         </div>
     </div>
-    <script src="script1-1.js" type="module"></script>
+    <script type="module" src="script2.js"></script>
 </body>
 </html>
